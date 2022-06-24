@@ -246,6 +246,14 @@ Rails/Date:
     - flexible
   AllowToTime: true
 
+Rails/DateTimeRange:
+  Description: >-
+                  Enforces the use of `all_(day|week|month|quarter|year)` over
+                  `beginning_of_(day|week|month|quarter|year)..end_of_(day|week|month|quarter|year)`
+                  to get the range of date/time.
+  Enabled: pending
+  VersionAdded: '<<next>>'
+
 Rails/DefaultScope:
   Description: 'Avoid use of `default_scope`.'
   StyleGuide: 'https://rails.rubystyle.guide#avoid-default-scope'
