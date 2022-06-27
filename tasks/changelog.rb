@@ -30,7 +30,7 @@ class Changelog
     end
 
     def write
-      Dir.mkdir(ENTRIES_PATH) unless Dir.exist?(ENTRIES_PATH)
+      Dir.mkdir(ENTRIES_PATH)
       File.write(path, content)
       path
     end
