@@ -188,6 +188,221 @@ RSpec.describe RuboCop::Cop::Rails::TimeComparison, :config do
     RUBY
   end
 
+  it do
+    expect_offense(<<~RUBY)
+      reminder&.remind_at < Time.current
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `reminder&.remind_at.past?` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      reminder&.remind_at.past?
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      time + 1.hour < Time.current
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time < 1.hour.ago` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time < 1.hour.ago
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      time - 30.minutes > Time.current
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time > 30.minutes.from_now` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time > 30.minutes.from_now
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      Time.current < time + 1.hour
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time > 1.hour.ago` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time > 1.hour.ago
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      Time.zone.now > time - 1.hour
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time < 1.hour.from_now` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time < 1.hour.from_now
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      (time + 1.hour) < Time.current
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time < 1.hour.ago` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time < 1.hour.ago
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      time + 24.hours < Time.current
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time < 24.hours.ago` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time < 24.hours.ago
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      time + 1.5.hours < Time.current
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time < 1.5.hours.ago` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time < 1.5.hours.ago
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      time + 90.seconds < Time.current
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time < 90.seconds.ago` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time < 90.seconds.ago
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      (time + 1.hour).before?(Time.current)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time.before?(1.hour.ago)` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time.before?(1.hour.ago)
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      Time.current.before?(time + 1.hour)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time.after?(1.hour.ago)` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time.after?(1.hour.ago)
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      (time + 1.hour).past?
+      ^^^^^^^^^^^^^^^^^^^^^ Use `time.before?(1.hour.ago)` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time.before?(1.hour.ago)
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      (time - 1.hour).future?
+      ^^^^^^^^^^^^^^^^^^^^^^^ Use `time.after?(1.hour.from_now)` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time.after?(1.hour.from_now)
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      reminder&.remind_at + 1.hour < Time.current
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `reminder&.remind_at < 1.hour.ago` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      reminder&.remind_at < 1.hour.ago
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      Time.current - time > 1.hour
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time < 1.hour.ago` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time < 1.hour.ago
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      Time.current - time < 1.hour
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time > 1.hour.ago` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time > 1.hour.ago
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      1.hour < Time.current - time
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time < 1.hour.ago` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time < 1.hour.ago
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      (Time.current - time) > 1.hour
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time < 1.hour.ago` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time < 1.hour.ago
+    RUBY
+  end
+
+  it do
+    expect_offense(<<~RUBY)
+      Time.zone.now - time > 1.hour
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Use `time < 1.hour.ago` instead.
+    RUBY
+
+    expect_correction(<<~RUBY)
+      time < 1.hour.ago
+    RUBY
+  end
+
+  it do
+    expect_no_offenses(<<~RUBY)
+      past?
+    RUBY
+  end
+
   it 'does not register an offense when a day would have to be moved across the comparison, ' \
      'as a calendar day is not always 24 hours long (DST)' do
     expect_no_offenses(<<~RUBY)
@@ -220,11 +435,26 @@ RSpec.describe RuboCop::Cop::Rails::TimeComparison, :config do
     RUBY
   end
 
-  it 'does not register an offense for a safe navigation operand, ' \
-     'as the correction would return `nil` where the comparison raises `NoMethodError`' do
+  it 'does not register an offense for a safe navigation argument, ' \
+     'as the comparison raises `ArgumentError` on `nil`, while the correction would raise `NoMethodError`' do
     expect_no_offenses(<<~RUBY)
-      reminder&.remind_at < Time.current
+      Time.current > reminder&.remind_at
       Time.current.after?(reminder&.remind_at)
+      Time.current - reminder&.remind_at > 1.hour
+    RUBY
+  end
+
+  it 'does not register an offense for a duration on a non-literal receiver, ' \
+     'as it may be an unrelated method that returns a number' do
+    expect_no_offenses(<<~RUBY)
+      time + shift.hours < Time.current
+      Time.current - time > shift.hours
+    RUBY
+  end
+
+  it 'does not register an offense for more than one duration, as only one of them can be moved' do
+    expect_no_offenses(<<~RUBY)
+      time + 1.hour + 30.minutes < Time.current
     RUBY
   end
 
