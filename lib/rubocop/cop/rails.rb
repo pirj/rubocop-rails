@@ -129,6 +129,7 @@ module RuboCop
       register_cop :StripHeredoc, "#{__dir__}/rails/strip_heredoc"
       register_cop :TableNameAssignment, "#{__dir__}/rails/table_name_assignment"
       register_cop :ThreeStateBooleanColumn, "#{__dir__}/rails/three_state_boolean_column"
+      register_cop :TimeComparison, "#{__dir__}/rails/time_comparison"
       register_cop :TimeZone, "#{__dir__}/rails/time_zone"
       register_cop :TimeZoneAssignment, "#{__dir__}/rails/time_zone_assignment"
       register_cop :ToFormattedS, "#{__dir__}/rails/to_formatted_s"
