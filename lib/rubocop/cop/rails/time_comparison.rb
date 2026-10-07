@@ -36,6 +36,7 @@ module RuboCop
       #   last_attempt_at.before?(1.hour.ago)
       #
       class TimeComparison < Base
+        include TimeComparisonHelper
         extend AutoCorrector
 
         MSG = 'Use `%<prefer>s` instead.'
@@ -47,14 +48,6 @@ module RuboCop
         ABSOLUTE_UNITS = Set[:second, :seconds, :minute, :minutes, :hour, :hours].freeze
 
         RELATIVE_METHODS = { :+ => 'ago', :- => 'from_now' }.freeze
-
-        # @!method current_time?(node)
-        def_node_matcher :current_time?, <<~PATTERN
-          {
-            (send (const {nil? cbase} :Time) :current)
-            (send (send (const {nil? cbase} :Time) :zone) :now)
-          }
-        PATTERN
 
         # @!method absolute_duration?(node)
         def_node_matcher :absolute_duration?, '(send {int float} ABSOLUTE_UNITS)'
@@ -97,7 +90,7 @@ module RuboCop
 
           if arithmetic?(time)
             check_shift(node, time, earlier)
-          elsif !(current_time_first && safe_navigation?(time))
+          elsif !rspec_be?(time) && !(current_time_first && safe_navigation?(time))
             register_offense(node, "#{time.source}#{dot(node, time)}#{earlier ? 'past?' : 'future?'}")
           end
         end
@@ -130,35 +123,6 @@ module RuboCop
           elsif absolute_duration?(node.receiver) && (time = elapsed_time(unwrap(node.first_argument)))
             [time, node.receiver, false]
           end
-        end
-
-        def register_offense(node, prefer)
-          add_offense(node, message: format(MSG, prefer: prefer)) do |corrector|
-            corrector.replace(node, prefer)
-          end
-        end
-
-        def unwrap(node)
-          node = node.children.first while node.begin_type? && node.children.one?
-          node
-        end
-
-        def arithmetic?(node)
-          node = unwrap(node)
-
-          node.send_type? && node.arithmetic_operation?
-        end
-
-        # `time&.at < Time.current` raises `NoMethodError` on `nil`, and so does `time&.at.past?`.
-        # `Time.current > time&.at` raises `ArgumentError` instead, so it is left alone.
-        def safe_navigation?(node)
-          while node
-            return true if node.csend_type?
-
-            node = node.call_type? ? node.receiver : nil
-          end
-
-          false
         end
 
         def dot(node, time)

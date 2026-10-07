@@ -403,6 +403,12 @@ RSpec.describe RuboCop::Cop::Rails::TimeComparison, :config do
     RUBY
   end
 
+  it 'does not register an offense for an RSpec `be` matcher, as it is not a time' do
+    expect_no_offenses(<<~RUBY)
+      expect(time).to be < Time.current
+    RUBY
+  end
+
   it 'does not register an offense when a day would have to be moved across the comparison, ' \
      'as a calendar day is not always 24 hours long (DST)' do
     expect_no_offenses(<<~RUBY)
